@@ -1,0 +1,26 @@
+{
+  "name": "t2pr-pilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pilot monorepo for ticket-to-pr: a React web app and three NestJS microservices",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.12 <25"
+  },
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "nx run-many -t build",
+    "test": "nx run-many -t test",
+    "typecheck": "nx run-many -t typecheck",
+    "dev": "nx run-many -t dev --parallel=4",
+    "graph": "nx graph"
+  },
+  "devDependencies": {
+    "nx": "24.0.6",
+    "typescript": "6.0.3"
+  }
+}

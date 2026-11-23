@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "types": [
+      "node",
+      "vitest/globals"
+    ],
+    "useDefineForClassFields": false
+  },
+  "include": [
+    "src",
+    "test"
+  ]
+}
