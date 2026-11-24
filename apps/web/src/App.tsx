@@ -14,6 +14,24 @@ export function App({ api }: { api: ShopApi }) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<Product[] | null>(null);
+
+  async function search(text: string) {
+    setQuery(text);
+    const q = text.trim();
+    if (!q) {
+      setResults(null);
+      return;
+    }
+    try {
+      setResults(await api.searchProducts(q.slice(0, 50)));
+      setError(null);
+    } catch (e) {
+      setError(`Search failed: ${(e as Error).message}`);
+    }
+  }
+
   const refresh = useCallback(async () => {
     try {
       const [p, o] = await Promise.all([api.listProducts(), api.listOrders()]);
@@ -59,7 +77,15 @@ export function App({ api }: { api: ShopApi }) {
       <h1>Brew Supply</h1>
       {error && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}
-      <ProductList products={products} onAdd={(p) => setCart((c) => addToCart(c, p))} />
+      <input
+        type="search"
+        aria-label="Search products"
+        placeholder="Search products"
+        value={query}
+        onChange={(e) => void search(e.target.value)}
+      />
+      {results && results.length === 0 && <p>No products found.</p>}
+      <ProductList products={results ?? products} onAdd={(p) => setCart((c) => addToCart(c, p))} />
       <CartPanel
         cart={cart}
         products={products}

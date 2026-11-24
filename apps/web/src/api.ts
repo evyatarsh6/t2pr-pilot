@@ -3,6 +3,7 @@ import type { CreateOrderInput, Order, Product } from '@t2pr/shared';
 /** Everything the web app asks of the gateway. Components get it as a prop, so tests pass a fake. */
 export interface ShopApi {
   listProducts(): Promise<Product[]>;
+  searchProducts(q: string): Promise<Product[]>;
   placeOrder(input: CreateOrderInput): Promise<Order>;
   listOrders(): Promise<Order[]>;
   cancelOrder(id: string): Promise<Order>;
@@ -30,6 +31,7 @@ export function createApi(baseUrl = '/api', fetchFn: typeof fetch = fetch): Shop
 
   return {
     listProducts: () => call<Product[]>('/products'),
+    searchProducts: (q) => call<Product[]>(`/products/search?q=${encodeURIComponent(q)}`),
     placeOrder: (input) => call<Order>('/orders', { method: 'POST', body: JSON.stringify(input) }),
     listOrders: () => call<Order[]>('/orders'),
     cancelOrder: (id) => call<Order>(`/orders/${encodeURIComponent(id)}/cancel`, { method: 'POST' }),

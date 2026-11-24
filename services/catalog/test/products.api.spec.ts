@@ -25,6 +25,22 @@ describe('catalog API', () => {
     expect(res.body.map((p: { id: string }) => p.id)).toEqual(['p-1', 'p-2', 'p-3']);
   });
 
+  it('GET /products/search matches names case-insensitively', async () => {
+    const res = await request(app.getHttpServer()).get('/products/search').query({ q: 'MUG' }).expect(200);
+    expect(res.body.map((p: { id: string }) => p.id)).toEqual(['p-3']);
+  });
+
+  it('GET /products/search returns an empty list when nothing matches', async () => {
+    await request(app.getHttpServer()).get('/products/search').query({ q: 'zzz' }).expect(200, []);
+  });
+
+  it('GET /products/search rejects a missing, empty or too long q', async () => {
+    const http = app.getHttpServer();
+    await request(http).get('/products/search').expect(400);
+    await request(http).get('/products/search').query({ q: '' }).expect(400);
+    await request(http).get('/products/search').query({ q: 'a'.repeat(51) }).expect(400);
+  });
+
   it('GET /products/:id answers 404 for an unknown product', async () => {
     await request(app.getHttpServer()).get('/products/p-999').expect(404);
   });

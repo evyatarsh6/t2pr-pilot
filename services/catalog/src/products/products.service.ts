@@ -11,6 +11,11 @@ export class ProductsService {
     return this.repo.findAll();
   }
 
+  search(q: string): Product[] {
+    const needle = q.toLowerCase();
+    return this.repo.findAll().filter((p) => p.name.toLowerCase().includes(needle));
+  }
+
   get(id: string): Product {
     const product = this.repo.findById(id);
     if (!product) throw new NotFoundException(`Product ${id} not found`);

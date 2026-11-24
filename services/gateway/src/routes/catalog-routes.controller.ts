@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Res } from '@nestjs/common';
+import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { UpstreamClient } from '../upstream/upstream.client.js';
 
@@ -10,6 +10,14 @@ export class CatalogRoutesController {
   @Get()
   async list(@Res({ passthrough: true }) res: Response) {
     const reply = await this.upstream.forward('catalog', 'GET', '/products');
+    res.status(reply.status);
+    return reply.body;
+  }
+
+  @Get('search')
+  async search(@Query('q') q: string | string[] | undefined, @Res({ passthrough: true }) res: Response) {
+    const value = typeof q === 'string' ? q : '';
+    const reply = await this.upstream.forward('catalog', 'GET', `/products/search?q=${encodeURIComponent(value)}`);
     res.status(reply.status);
     return reply.body;
   }

@@ -44,6 +44,12 @@ describe('gateway API', () => {
     expect(upstream.calls).toEqual([{ service: 'catalog', method: 'GET', path: '/products', body: undefined }]);
   });
 
+  it('GET /api/products/search goes to the catalog', async () => {
+    upstream.reply = { status: 200, body: [] };
+    await request(app.getHttpServer()).get('/api/products/search').query({ q: 'a b' }).expect(200, []);
+    expect(upstream.calls[0]).toMatchObject({ service: 'catalog', path: '/products/search?q=a%20b' });
+  });
+
   it('passes the upstream status through', async () => {
     upstream.reply = { status: 404, body: { message: 'Product p-9 not found' } };
     await request(app.getHttpServer()).get('/api/products/p-9').expect(404);

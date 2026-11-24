@@ -1,5 +1,5 @@
 import type { Order, Product } from '@t2pr/shared';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { App } from './App';
@@ -14,6 +14,7 @@ function fakeApi(overrides: Partial<ShopApi> = {}): ShopApi {
   const orders: Order[] = [];
   return {
     listProducts: vi.fn(async () => products),
+    searchProducts: vi.fn(async (q) => products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()))),
     listOrders: vi.fn(async () => orders),
     placeOrder: vi.fn(async (input) => {
       const order: Order = {
@@ -37,6 +38,17 @@ describe('App', () => {
     render(<App api={fakeApi()} />);
     expect(await screen.findByText('Beans')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add Kettle' })).toBeDisabled();
+  });
+
+  it('searches products and shows the results', async () => {
+    const api = fakeApi();
+    const user = userEvent.setup();
+    render(<App api={api} />);
+    await screen.findByText('Beans');
+    await user.type(screen.getByLabelText('Search products'), 'kett');
+    expect(api.searchProducts).toHaveBeenLastCalledWith('kett');
+    await waitFor(() => expect(screen.queryByText('Beans')).not.toBeInTheDocument());
+    expect(screen.getByText('Kettle')).toBeInTheDocument();
   });
 
   it('places an order from the cart', async () => {
