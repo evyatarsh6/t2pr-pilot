@@ -13,7 +13,7 @@ const products: Product[] = [
 function fakeApi(overrides: Partial<ShopApi> = {}): ShopApi {
   const orders: Order[] = [];
   return {
-    listProducts: vi.fn(async () => products),
+    listProducts: vi.fn(async (page = 1) => ({ items: products, page, pageSize: 20, total: products.length })),
     listOrders: vi.fn(async () => orders),
     placeOrder: vi.fn(async (input) => {
       const order: Order = {
@@ -33,6 +33,25 @@ function fakeApi(overrides: Partial<ShopApi> = {}): ShopApi {
 }
 
 describe('App', () => {
+  it('pages through products with Previous/Next', async () => {
+    const listProducts = vi.fn(async (page = 1) => ({
+      items: [products[page - 1]!],
+      page,
+      pageSize: 1,
+      total: 2,
+    }));
+    const user = userEvent.setup();
+    render(<App api={fakeApi({ listProducts })} />);
+    expect(await screen.findByText('Beans')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Next' }));
+    expect(await screen.findByText('Kettle')).toBeInTheDocument();
+    expect(listProducts).toHaveBeenLastCalledWith(2);
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Previous' }));
+    expect(await screen.findByText('Beans')).toBeInTheDocument();
+  });
+
   it('shows products and disables the ones out of stock', async () => {
     render(<App api={fakeApi()} />);
     expect(await screen.findByText('Beans')).toBeInTheDocument();

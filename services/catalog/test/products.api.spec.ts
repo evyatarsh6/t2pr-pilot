@@ -20,10 +20,24 @@ describe('catalog API', () => {
     await request(app.getHttpServer()).get('/health').expect(200, { status: 'ok', service: 'catalog' });
   });
 
-  it('GET /products returns the catalog', async () => {
+  it('GET /products returns the first page with defaults', async () => {
     const res = await request(app.getHttpServer()).get('/products').expect(200);
-    expect(res.body.map((p: { id: string }) => p.id)).toEqual(['p-1', 'p-2', 'p-3']);
+    expect(res.body).toMatchObject({ page: 1, pageSize: 20, total: 3 });
+    expect(res.body.items.map((p: { id: string }) => p.id)).toEqual(['p-1', 'p-2', 'p-3']);
   });
+
+  it('GET /products returns a second page', async () => {
+    const res = await request(app.getHttpServer()).get('/products?page=2&pageSize=2').expect(200);
+    expect(res.body).toMatchObject({ page: 2, pageSize: 2, total: 3 });
+    expect(res.body.items.map((p: { id: string }) => p.id)).toEqual(['p-3']);
+  });
+
+  it.each(['page=0', 'page=abc', 'page=1.5', 'pageSize=0', 'pageSize=101', 'pageSize=x'])(
+    'GET /products?%s answers 400',
+    async (query) => {
+      await request(app.getHttpServer()).get(`/products?${query}`).expect(400);
+    },
+  );
 
   it('GET /products/:id answers 404 for an unknown product', async () => {
     await request(app.getHttpServer()).get('/products/p-999').expect(404);

@@ -10,7 +10,7 @@ describe('ProductsService', () => {
   });
 
   it('lists the seeded products', () => {
-    expect(service.list()).toHaveLength(3);
+    expect(service.list().items).toHaveLength(3);
   });
 
   it('creates a product with a new id', () => {

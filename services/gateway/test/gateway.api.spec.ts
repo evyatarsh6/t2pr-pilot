@@ -44,6 +44,11 @@ describe('gateway API', () => {
     expect(upstream.calls).toEqual([{ service: 'catalog', method: 'GET', path: '/products', body: undefined }]);
   });
 
+  it('GET /api/products forwards the query string', async () => {
+    await request(app.getHttpServer()).get('/api/products?page=2&pageSize=5').expect(200);
+    expect(upstream.calls[0]?.path).toBe('/products?page=2&pageSize=5');
+  });
+
   it('passes the upstream status through', async () => {
     upstream.reply = { status: 404, body: { message: 'Product p-9 not found' } };
     await request(app.getHttpServer()).get('/api/products/p-9').expect(404);

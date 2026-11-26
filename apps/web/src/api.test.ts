@@ -5,7 +5,7 @@ describe('createApi', () => {
   it('calls the gateway under /api', async () => {
     const fetchFn = vi.fn(async () => new Response(JSON.stringify([]), { status: 200 }));
     await createApi('/api', fetchFn as unknown as typeof fetch).listProducts();
-    expect(fetchFn).toHaveBeenCalledWith('/api/products', expect.objectContaining({}));
+    expect(fetchFn).toHaveBeenCalledWith('/api/products?page=1&pageSize=20', expect.objectContaining({}));
   });
 
   it('turns an error answer into ApiError with the message', async () => {
