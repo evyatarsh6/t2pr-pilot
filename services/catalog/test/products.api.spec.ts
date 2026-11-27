@@ -25,6 +25,23 @@ describe('catalog API', () => {
     expect(res.body.map((p: { id: string }) => p.id)).toEqual(['p-1', 'p-2', 'p-3']);
   });
 
+  it('GET /products filters by name, case-insensitively', async () => {
+    const all = await request(app.getHttpServer()).get('/products').expect(200);
+    const name: string = all.body[0].name;
+    const res = await request(app.getHttpServer()).get('/products').query({ q: `  ${name.toUpperCase()} ` }).expect(200);
+    expect(res.body.map((p: { id: string }) => p.id)).toContain(all.body[0].id);
+    expect(res.body.every((p: { name: string }) => p.name.toLowerCase().includes(name.toLowerCase()))).toBe(true);
+  });
+
+  it('GET /products with no match returns an empty list', async () => {
+    await request(app.getHttpServer()).get('/products').query({ q: 'zzz-no-such-product' }).expect(200, []);
+  });
+
+  it('GET /products rejects an invalid q', async () => {
+    await request(app.getHttpServer()).get('/products').query({ q: 'x'.repeat(101) }).expect(400);
+    await request(app.getHttpServer()).get('/products?q=a&q=b').expect(400);
+  });
+
   it('GET /products/:id answers 404 for an unknown product', async () => {
     await request(app.getHttpServer()).get('/products/p-999').expect(404);
   });

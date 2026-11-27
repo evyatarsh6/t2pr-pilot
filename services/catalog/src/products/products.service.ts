@@ -7,8 +7,12 @@ import { ProductsRepository } from './products.repository.js';
 export class ProductsService {
   constructor(private readonly repo: ProductsRepository) {}
 
-  list(): Product[] {
-    return this.repo.findAll();
+  /** All products, or only those whose name contains `q` (case-insensitive) when it is given. */
+  list(q?: string): Product[] {
+    const all = this.repo.findAll();
+    if (!q) return all;
+    const needle = q.toLowerCase();
+    return all.filter((p) => p.name.toLowerCase().includes(needle));
   }
 
   get(id: string): Product {

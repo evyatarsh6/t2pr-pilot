@@ -39,6 +39,23 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Add Kettle' })).toBeDisabled();
   });
 
+  it('filters the product list with the search input', async () => {
+    const api = fakeApi({
+      listProducts: vi.fn(async (q?: string) =>
+        products.filter((p) => !q || p.name.toLowerCase().includes(q.toLowerCase())),
+      ),
+    });
+    const user = userEvent.setup();
+    render(<App api={api} />);
+    expect(await screen.findByText('Kettle')).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Search products'), 'bea');
+    expect(await screen.findByText('Beans')).toBeInTheDocument();
+    expect(screen.queryByText('Kettle')).not.toBeInTheDocument();
+    expect(api.listProducts).toHaveBeenLastCalledWith('bea');
+    await user.type(screen.getByLabelText('Search products'), 'zzz');
+    expect(await screen.findByText('No products found')).toBeInTheDocument();
+  });
+
   it('places an order from the cart', async () => {
     const api = fakeApi();
     const user = userEvent.setup();

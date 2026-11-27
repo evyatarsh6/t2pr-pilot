@@ -3,11 +3,23 @@ import { formatCents, type Product } from '@t2pr/shared';
 interface Props {
   products: Product[];
   onAdd(product: Product): void;
+  query: string;
+  onQueryChange(query: string): void;
 }
 
-export function ProductList({ products, onAdd }: Props) {
+export function ProductList({ products, onAdd, query, onQueryChange }: Props) {
   return (
-    <ul className="products">
+    <section>
+      <input
+        type="search"
+        aria-label="Search products"
+        placeholder="Search products"
+        maxLength={100}
+        value={query}
+        onChange={(e) => onQueryChange(e.target.value)}
+      />
+      {products.length === 0 && <p>No products found</p>}
+      <ul className="products">
       {products.map((p) => (
         <li key={p.id}>
           <strong>{p.name}</strong>
@@ -18,6 +30,7 @@ export function ProductList({ products, onAdd }: Props) {
           </button>
         </li>
       ))}
-    </ul>
+      </ul>
+    </section>
   );
 }

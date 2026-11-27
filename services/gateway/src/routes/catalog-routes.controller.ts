@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Res } from '@nestjs/common';
+import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { UpstreamClient } from '../upstream/upstream.client.js';
 
@@ -8,8 +8,9 @@ export class CatalogRoutesController {
   constructor(private readonly upstream: UpstreamClient) {}
 
   @Get()
-  async list(@Res({ passthrough: true }) res: Response) {
-    const reply = await this.upstream.forward('catalog', 'GET', '/products');
+  async list(@Query('q') q: unknown, @Res({ passthrough: true }) res: Response) {
+    const path = q === undefined ? '/products' : `/products?q=${encodeURIComponent(String(q))}`;
+    const reply = await this.upstream.forward('catalog', 'GET', path);
     res.status(reply.status);
     return reply.body;
   }

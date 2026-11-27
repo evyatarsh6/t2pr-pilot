@@ -10,20 +10,21 @@ export function App({ api }: { api: ShopApi }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [cart, setCart] = useState<Cart>({});
+  const [query, setQuery] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
-      const [p, o] = await Promise.all([api.listProducts(), api.listOrders()]);
+      const [p, o] = await Promise.all([api.listProducts(query.trim() || undefined), api.listOrders()]);
       setProducts(p);
       setOrders(o);
       setError(null);
     } catch (e) {
       setError(`Could not load the shop: ${(e as Error).message}`);
     }
-  }, [api]);
+  }, [api, query]);
 
   useEffect(() => {
     void refresh();
@@ -59,7 +60,7 @@ export function App({ api }: { api: ShopApi }) {
       <h1>Brew Supply</h1>
       {error && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}
-      <ProductList products={products} onAdd={(p) => setCart((c) => addToCart(c, p))} />
+      <ProductList query={query} onQueryChange={setQuery} products={products} onAdd={(p) => setCart((c) => addToCart(c, p))} />
       <CartPanel
         cart={cart}
         products={products}
